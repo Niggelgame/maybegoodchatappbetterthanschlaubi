@@ -38,7 +38,7 @@ class SocketDriver extends ChangeNotifier {
         queryParameters: attributes);
     _connect();
 
-    _channel.stream.listen(_listen, onDone: _onDone, onError: _onError);
+
   }
 
   void _onError(e) {
@@ -47,6 +47,8 @@ class SocketDriver extends ChangeNotifier {
 
   void _onDone() {
     print("Done");
+
+    _connect();
   }
 
   void _listen(packet) {
@@ -67,7 +69,11 @@ class SocketDriver extends ChangeNotifier {
       _handleChats(json);
     } else if (code == OPCodes.chatReceive) {
       _handleNewChat(json);
-    } else {
+    } else if (code == OPCodes.joinedChat) {
+      _handleJoinedChat(json);
+    } else if(code == OPCodes.leftChat) {
+      _handleLeftChat(json);
+    }else {
       throw Exception("Cannot resolve packet");
     }
   }
@@ -106,6 +112,7 @@ class SocketDriver extends ChangeNotifier {
   _handleChats(json) {
     Chats c = Chats.fromJson(json);
     chats = c.chats;
+    print(chats);
     notifyListeners();
   }
 
@@ -114,9 +121,25 @@ class SocketDriver extends ChangeNotifier {
     chats.add(c);
     notifyListeners();
   }
+  
+  _handleJoinedChat(json) {
+    JoinChat c = JoinChat.fromJson(json);
+
+    chats.firstWhere((element) => element.chatId == c.chatId).isJoined = true;
+    notifyListeners();
+  }
+
+  _handleLeftChat(json) {
+    JoinChat c = JoinChat.fromJson(json);
+
+    chats.firstWhere((element) => element.chatId == c.chatId).isJoined = false;
+    notifyListeners();
+  }
 
   void _connect() {
     _channel = WebSocketChannel.connect(uri);
+
+    _channel.stream.listen(_listen, onDone: _onDone, onError: _onError);
   }
 
   sendMessage(String m, int chatId) {
@@ -139,8 +162,36 @@ class SocketDriver extends ChangeNotifier {
     _channel.sink.add(json);
   }
 
+  joinChat(Chat c) {
+    var p = _turnChatIntoJoinChatPacket(JoinChat.fromChat(c));
+    var json = jsonEncode(p);
+
+    _channel.sink.add(json);
+  }
+
+  leaveChat(Chat c) {
+    var p = _turnChatIntoLeaveChatPacket(JoinChat.fromChat(c));
+    var json = jsonEncode(p);
+
+    _channel.sink.add(json);
+  }
+
   selectChat(Chat c) {
     currentlySelectedChat = c;
+  }
+
+  dynamic _turnChatIntoLeaveChatPacket(JoinChat c) {
+    return {
+      'op': OPCodes.leaveChat,
+      'message': c,
+    };
+  }
+
+  dynamic _turnChatIntoJoinChatPacket(JoinChat c) {
+    return {
+      'op': OPCodes.joinChat,
+      'message': c,
+    };
   }
 
   dynamic _turnMessageIntoPacket(SendMessage m) {
@@ -153,9 +204,13 @@ class SocketDriver extends ChangeNotifier {
 }
 
 class OPCodes {
-  static const messageReceive = "receive_message";
-  static const chatsReceive = "receive_chats";
-  static const chatReceive = "receive_chat";
-  static const messageSend = "send_message";
-  static const createdChat = "created_chat";
+  static const messageReceive = 'receive_message';
+  static const chatsReceive = 'receive_chats';
+  static const chatReceive = 'receive_chat';
+  static const messageSend = 'send_message';
+  static const createdChat = 'created_chat';
+  static const joinChat = 'join_chat';
+  static const joinedChat = 'joined_chat';
+  static const leaveChat = 'leave_chat';
+  static const leftChat = 'left_chat';
 }

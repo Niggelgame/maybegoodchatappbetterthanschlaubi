@@ -28,7 +28,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type ClientFunctions interface {
-	GetChats() []*models.Chat
+	GetChats() []*models.UserChat
 	SendIntoChat(message *models.SendMessage)
 }
 
@@ -41,11 +41,24 @@ type Client struct {
 
 	send chan models.SendMessage
 
-	createdChat chan models.Chat
+	createdChat chan models.UserChat
 }
 
-func (c *Client) GetChats() []*models.Chat {
-	return c.handler.chats
+func (c *Client) GetChats() []*models.UserChat {
+	userChats := []*models.UserChat{}
+	for _, chat := range c.handler.chats {
+		isIn := false
+
+		for _, user := range chat.Users {
+			if user.ID == c.user.ID {
+				isIn = true
+				break
+			}
+		}
+		userChats = append(userChats, models.NewUserChat(*chat, isIn))
+	}
+	println(userChats)
+	return userChats
 }
 
 func (c *Client) SendIntoChat(message *models.SendMessage) {
@@ -53,19 +66,6 @@ func (c *Client) SendIntoChat(message *models.SendMessage) {
 	for _, chat := range c.handler.chats {
 		if chat.ID == message.ChatID {
 			//TODO: BAD CODE
-
-			isIn := false
-
-			for _, user := range chat.Users {
-				if user.ID == c.user.ID {
-					isIn = true
-					break
-				}
-			}
-
-			if !isIn {
-				chat.Users = append(chat.Users, c.user)
-			}
 
 			for _, u := range chat.Users {
 				c.handler.sendmessage <- models.HandlerSendMessage{
@@ -106,7 +106,29 @@ func (c *Client) readPump() {
 			sendMessage := models.NewSendMessage(m.Message, c.user.Username, m.ChatID)
 			c.SendIntoChat(sendMessage)
 		case *models.CreateChat:
-			c.handler.createdChat <-*models.NewChat([]models.User{c.user}, m.Name)
+			c.handler.createdChat <- *models.NewChat([]models.User{c.user}, m.Name)
+		case *models.JoinChat:
+			for _, chat := range c.handler.chats {
+				if chat.ID == m.ChatID {
+					chat.Users = append(chat.Users, c.user)
+					c.conn.WriteJSON(models.NewJoinedChat(*m))
+				}
+			}
+		case *models.LeaveChat:
+			println("Leaving Chat")
+			for _, chat := range c.handler.chats {
+				if chat.ID == m.ChatID {
+					for i, user := range chat.Users {
+						if user.ID == c.user.ID {
+							chat.Users = append(chat.Users[:i], chat.Users[i+1:]...)
+							break
+						}
+					}
+					println("Left Chat")
+					c.conn.WriteJSON(models.NewLeftChat(*m))
+					break
+				}
+			}
 		}
 	}
 }
@@ -188,7 +210,7 @@ func serverWs(handler *Handler, w http.ResponseWriter, r *http.Request) {
 		conn:        conn,
 		send:        make(chan models.SendMessage, 100),
 		user:        *u,
-		createdChat: make(chan models.Chat, 100),
+		createdChat: make(chan models.UserChat, 100),
 	}
 
 	go client.writePump()
@@ -198,7 +220,7 @@ func serverWs(handler *Handler, w http.ResponseWriter, r *http.Request) {
 
 	chats := client.GetChats()
 
-	c := models.NewChats(chats)
+	c := models.NewUserChats(chats)
 
 	err = client.conn.WriteJSON(c)
 

@@ -34,6 +34,11 @@ func (m *MessagePacket) UnmarshalJSON(b []byte) error {
 		i = &ReceiveMessage{}
 	case "created_chat":
 		i = &models.CreateChat{}
+	case "join_chat":
+		i = &models.JoinChat{}
+	case "leave_chat":
+		println("Leaving Chat")
+		i = &models.LeaveChat{}
 	default:
 		return errors.New("unknown message type")
 	}

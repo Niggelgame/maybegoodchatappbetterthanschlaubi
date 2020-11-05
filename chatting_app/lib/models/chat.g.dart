@@ -10,12 +10,14 @@ Chat _$ChatFromJson(Map<String, dynamic> json) {
   return Chat(
     json['chat_name'] as String,
     json['chat_id'] as int,
+    json['is_joined'] as bool,
   );
 }
 
 Map<String, dynamic> _$ChatToJson(Chat instance) => <String, dynamic>{
       'chat_name': instance.chatName,
       'chat_id': instance.chatId,
+      'is_joined': instance.isJoined,
     };
 
 Chats _$ChatsFromJson(Map<String, dynamic> json) {
@@ -40,4 +42,14 @@ CreateChat _$CreateChatFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$CreateChatToJson(CreateChat instance) =>
     <String, dynamic>{
       'name': instance.name,
+    };
+
+JoinChat _$JoinChatFromJson(Map<String, dynamic> json) {
+  return JoinChat(
+    json['chat_id'] as int,
+  );
+}
+
+Map<String, dynamic> _$JoinChatToJson(JoinChat instance) => <String, dynamic>{
+      'chat_id': instance.chatId,
     };

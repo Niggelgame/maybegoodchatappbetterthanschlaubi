@@ -15,8 +15,11 @@ class Chat with ChangeNotifier {
   final String chatName;
   @JsonKey(name: 'chat_id')
   final int chatId;
+  @JsonKey(name: 'is_joined')
+  bool isJoined;
 
-  Chat(this.chatName, this.chatId);
+
+  Chat(this.chatName, this.chatId, this.isJoined);
 
   factory Chat.fromJson(Map<String, dynamic> json) => _$ChatFromJson(json);
 
@@ -55,4 +58,18 @@ class CreateChat {
   factory CreateChat.fromJson(Map<String, dynamic> json) => _$CreateChatFromJson(json);
 
   Map<String, dynamic> toJson() => _$CreateChatToJson(this);
+}
+
+@JsonSerializable()
+class JoinChat {
+  @JsonKey(name: 'chat_id')
+  final int chatId;
+
+  JoinChat(this.chatId);
+
+  factory JoinChat.fromJson(Map<String, dynamic> json) => _$JoinChatFromJson(json);
+
+  factory JoinChat.fromChat(Chat c) => JoinChat(c.chatId);
+
+  Map<String, dynamic> toJson() => _$JoinChatToJson(this);
 }

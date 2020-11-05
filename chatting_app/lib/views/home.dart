@@ -43,9 +43,9 @@ class _HomeState extends State<Home> {
                   providerContext = context;
                   return Scaffold(
                     body: Navigator(
-                      initialRoute: "",
+                      initialRoute: "/home",
                       onGenerateRoute: (routeSettings) {
-                        if (routeSettings.name == "") {
+                        if (routeSettings.name == "/home") {
                           return MaterialPageRoute(builder: (_) => _Home());
                         } else {
                           return MaterialPageRoute(builder: (_) => Container());
@@ -103,8 +103,9 @@ class _Home extends StatelessWidget {
               ),
             ],
           );
-
-          context.read<SocketDriver>().createChat(name.first);
+          if(name != null) {
+            context.read<SocketDriver>().createChat(name.first);
+          }
         },
       ),
       body: ListView.builder(
@@ -126,26 +127,46 @@ class _ChatPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    print(chat.chatName);
     return GestureDetector(
       onTap: () {
-        context.read<SocketDriver>().selectChat(chat);
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => ChatView(c: chat)));
+        if(chat.isJoined) {
+          context.read<SocketDriver>().selectChat(chat);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => ChatView(c: chat)));
+        }
       },
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                chat.chatName ?? '',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      chat.chatName ?? '',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      chat.messages != null && chat.messages.length > 0 ? '${chat.messages.last.author}: ${chat.messages.last.message}' : 'Join',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+                    ),
+                  ],
+                ),
               ),
-              Text(
-                'Join',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
-              ),
+              chat.isJoined
+                  ? Container()
+                  : RaisedButton(
+                      onPressed: () =>
+                          context.read<SocketDriver>().joinChat(chat),
+                      child: Text('Join'),
+                      color: Colors.green,
+                    )
             ],
           ),
         ),

@@ -23,6 +23,16 @@ class _ChatViewState extends State<ChatView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.c.chatName),
+        backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.close_fullscreen_sharp),
+            onPressed: () {
+              context.read<SocketDriver>().leaveChat(widget.c);
+              Navigator.of(context).pop();
+            },
+          )
+        ],
       ),
       body: Builder(
         builder: (context) {

@@ -62,13 +62,22 @@ func (h *Handler) run() {
 		case c := <- h.createdChat:
 			h.chats = append(h.chats, &c)
 			for client := range h.clients {
+				isIn := false
+				for _, u := range c.Users {
+					if u.ID == client.user.ID {
+						isIn = true
+						break
+					}
+				}
+
 				select {
-					case client.createdChat <- c:
+					case client.createdChat <- *models.NewUserChat(c, isIn):
 				default:
 					log.Println("Did NOT Sent out chat creation command")
 					close(client.send)
 				}
 			}
 		}
+
 	}
 }
