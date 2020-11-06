@@ -8,8 +8,10 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 class Home extends StatefulWidget {
   final String username;
   final String password;
+  final String host;
+  final int port;
 
-  const Home({Key key, @required this.username, @required this.password})
+  const Home({Key key, @required this.username, @required this.password, @required this.host, @required this.port})
       : super(key: key);
 
   @override
@@ -37,7 +39,7 @@ class _HomeState extends State<Home> {
             providers: [
               ChangeNotifierProvider(
                 create: (_) => SocketDriver(
-                    widget.username, widget.password, context, key),
+                    widget.host, widget.port, widget.username, widget.password, context, key),
                 lazy: false,
                 builder: (context, widget) {
                   providerContext = context;

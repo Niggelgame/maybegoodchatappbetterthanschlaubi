@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SocketDriver extends ChangeNotifier {
+  final String host;
+  final int port;
   final String username;
   final String password;
   final BuildContext context;
@@ -27,15 +29,16 @@ class SocketDriver extends ChangeNotifier {
     super.dispose();
   }
 
-  SocketDriver(this.username, this.password, this.context, this.navigationKey) {
+  SocketDriver(this.host, this.port, this.username, this.password, this.context, this.navigationKey) {
     var attributes = Map<String, dynamic>();
     attributes["username"] = username;
     attributes["password"] = password;
     uri = Uri(
         scheme: "ws",
-        host: "192.168.19.66",
-        port: 8081,
+        host: host,
+        port: port,
         queryParameters: attributes);
+    print(uri);
     _connect();
 
 

@@ -1,6 +1,6 @@
 import 'package:chatting_app/views/home.dart';
-import 'package:chatting_app/views/views.dart';
 import 'package:flutter/material.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 
 void main() {
   runApp(
@@ -59,7 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _usernameController =
       TextEditingController(text: 'Hello Socket!');
 
-  TextEditingController _passwordController = TextEditingController();
+  String hostname = "192.168.19.66";
+  int port = 8081;
 
   void _joinChat() {
     if (_usernameController.text.isEmpty) {
@@ -67,22 +68,36 @@ class _MyHomePageState extends State<MyHomePage> {
           .showSnackBar(SnackBar(content: Text('Please provide username')));
       return;
     }
+    if (hostname.isEmpty) {
+      Scaffold.of(context).showSnackBar(
+          SnackBar(content: Text('Hostname needs to be provided')));
+      return;
+    }
+    if (hostname.isEmpty) {
+      Scaffold.of(context).showSnackBar(
+          SnackBar(content: Text('Hostname needs to be provided')));
+      return;
+    }
+    if (port == null) {
+      Scaffold.of(context).showSnackBar(
+          SnackBar(content: Text('Port needs to be provided')));
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => Home(username: _usernameController.text, password: _passwordController.text)
-        // builder: (_) => ChatView(name: _usernameController.text),
-      ),
+          builder: (_) => Home(
+                username: _usernameController.text,
+                password: "2",
+                host: hostname,
+                port: port,
+              )
+          // builder: (_) => ChatView(name: _usernameController.text),
+          ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -95,13 +110,68 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text('Host: $hostname'),
+            RaisedButton(
+              onPressed: () async {
+                var name = await showTextInputDialog(
+                  context: context,
+                  textFields: [
+                    DialogTextField(
+                      hintText: 'hostname',
+                      validator: (text) {
+                        if (text.isEmpty) {
+                          return "Text may not be empty";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ],
+                );
+                if (name.isNotEmpty && name.length > 0) {
+                  setState(() {
+                    hostname = name[0];
+                  });
+                }
+              },
+              child: Text('Change hostname'),
+            ),
+            Text('Port: $port'),
+            RaisedButton(
+              onPressed: () async {
+                var stringport = await showTextInputDialog(
+                  context: context,
+                  textFields: [
+                    DialogTextField(
+                      hintText: 'Port',
+                      validator: (text) {
+                        if (text.isEmpty) {
+                          return "Port may not be empty";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ],
+                );
+                if (stringport.isNotEmpty && stringport.length > 0) {
+                  int p = int.tryParse(stringport[0]);
+                  if(p != null) {
+                    setState(() {
+                      port = p;
+                    });
+                  } else {
+                    Scaffold.of(context).showSnackBar(
+                        SnackBar(content: Text('Only numbers can be inputted')));
+                    return;
+                  }
+                }
+              },
+              child: Text('Change hostname'),
+            ),
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(hintText: "Username"),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(hintText: "Password"),
             ),
           ],
         ),
