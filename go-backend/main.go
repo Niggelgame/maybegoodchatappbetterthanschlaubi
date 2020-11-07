@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -15,9 +16,15 @@ func main() {
 
 	go handler.run()
 
+
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.BasicAuth()
 		serverWs(handler, w, r)
+	})
+
+	http.HandleFunc("/helloWorld", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Hello there")
 	})
 
 	err := http.ListenAndServe(addr, nil)

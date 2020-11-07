@@ -59,8 +59,11 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _usernameController =
       TextEditingController(text: 'Hello Socket!');
 
-  String hostname = "192.168.19.66";
-  int port = 8081;
+  String hostname = "chatting.niggelgame.dev";
+  bool withPort = false;
+  int port = 80;
+
+  bool secure = false;
 
   void _joinChat() {
     if (_usernameController.text.isEmpty) {
@@ -79,8 +82,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     if (port == null) {
-      Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text('Port needs to be provided')));
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Port needs to be provided')));
       return;
     }
     Navigator.of(context).push(
@@ -90,6 +93,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 password: "2",
                 host: hostname,
                 port: port,
+                secure: secure,
+            withPort: withPort,
               )
           // builder: (_) => ChatView(name: _usernameController.text),
           ),
@@ -136,6 +141,11 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text('Change hostname'),
             ),
+            CheckboxListTile(
+              value: withPort,
+              onChanged: (v) => setState(() => withPort = v),
+              title: Text('With Port?'),
+            ),
             Text('Port: $port'),
             RaisedButton(
               onPressed: () async {
@@ -156,18 +166,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
                 if (stringport.isNotEmpty && stringport.length > 0) {
                   int p = int.tryParse(stringport[0]);
-                  if(p != null) {
+                  if (p != null) {
                     setState(() {
                       port = p;
                     });
                   } else {
-                    Scaffold.of(context).showSnackBar(
-                        SnackBar(content: Text('Only numbers can be inputted')));
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                        content: Text('Only numbers can be inputted')));
                     return;
                   }
                 }
               },
               child: Text('Change hostname'),
+            ),
+            CheckboxListTile(
+              value: secure,
+              onChanged: (v) => setState(() => secure = v),
+              title: Text('Secure'),
             ),
             TextField(
               controller: _usernameController,

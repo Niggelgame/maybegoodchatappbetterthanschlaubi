@@ -13,6 +13,8 @@ class SocketDriver extends ChangeNotifier {
   final String password;
   final BuildContext context;
   final GlobalKey<NavigatorState> navigationKey;
+  final bool secure;
+  final bool withPort;
 
   List<Chat> chats;
 
@@ -29,14 +31,14 @@ class SocketDriver extends ChangeNotifier {
     super.dispose();
   }
 
-  SocketDriver(this.host, this.port, this.username, this.password, this.context, this.navigationKey) {
+  SocketDriver(this.host, this.port, this.secure, this.withPort, this.username, this.password, this.context, this.navigationKey) {
     var attributes = Map<String, dynamic>();
     attributes["username"] = username;
     attributes["password"] = password;
     uri = Uri(
-        scheme: "ws",
+        scheme: secure != null ? secure ? "wss" : "ws" : "wss",
         host: host,
-        port: port,
+        port: withPort ? port: null,
         queryParameters: attributes);
     print(uri);
     _connect();

@@ -10,8 +10,17 @@ class Home extends StatefulWidget {
   final String password;
   final String host;
   final int port;
+  final bool secure;
+  final bool withPort;
 
-  const Home({Key key, @required this.username, @required this.password, @required this.host, @required this.port})
+  const Home(
+      {Key key,
+      @required this.username,
+      @required this.password,
+      @required this.host,
+      @required this.port,
+      @required this.secure,
+      @required this.withPort})
       : super(key: key);
 
   @override
@@ -39,7 +48,14 @@ class _HomeState extends State<Home> {
             providers: [
               ChangeNotifierProvider(
                 create: (_) => SocketDriver(
-                    widget.host, widget.port, widget.username, widget.password, context, key),
+                    widget.host,
+                    widget.port,
+                    widget.secure,
+                    widget.withPort,
+                    widget.username,
+                    widget.password,
+                    context,
+                    key),
                 lazy: false,
                 builder: (context, widget) {
                   providerContext = context;
@@ -105,7 +121,7 @@ class _Home extends StatelessWidget {
               ),
             ],
           );
-          if(name != null) {
+          if (name != null) {
             context.read<SocketDriver>().createChat(name.first);
           }
         },
@@ -129,11 +145,10 @@ class _ChatPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     print(chat.chatName);
     return GestureDetector(
       onTap: () {
-        if(chat.isJoined) {
+        if (chat.isJoined) {
           context.read<SocketDriver>().selectChat(chat);
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (_) => ChatView(c: chat)));
@@ -154,7 +169,9 @@ class _ChatPreview extends StatelessWidget {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      chat.messages != null && chat.messages.length > 0 ? '${chat.messages.last.author}: ${chat.messages.last.message}' : 'Join',
+                      chat.messages != null && chat.messages.length > 0
+                          ? '${chat.messages.last.author}: ${chat.messages.last.message}'
+                          : 'Join',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
                     ),
