@@ -194,7 +194,7 @@ func serverWs(handler *Handler, w http.ResponseWriter, r *http.Request) {
 
 	println(u)
 
-	println(r.Header)
+	println(r.Header["Connection"])
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 
