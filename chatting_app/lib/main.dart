@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _usernameController =
       TextEditingController(text: 'Hello Socket!');
 
-  String hostname = "chatting.niggelgame.dev";
+  String hostname = "chatting.kedil.de";
   bool withPort = false;
   int port = 80;
 

@@ -194,6 +194,8 @@ func serverWs(handler *Handler, w http.ResponseWriter, r *http.Request) {
 
 	println(u)
 
+	println(r.Header)
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {

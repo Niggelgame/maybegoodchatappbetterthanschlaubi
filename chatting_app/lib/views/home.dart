@@ -41,7 +41,8 @@ class _HomeState extends State<Home> {
     return Scaffold(
       body: WillPopScope(
         onWillPop: () async {
-          return !(await key.currentState.maybePop());
+          key.currentState.maybePop();
+          return !key.currentState.canPop();
         },
         child: Builder(builder: (context) {
           return MultiProvider(
@@ -61,12 +62,12 @@ class _HomeState extends State<Home> {
                   providerContext = context;
                   return Scaffold(
                     body: Navigator(
-                      initialRoute: "/home",
+                      initialRoute: "/",
                       onGenerateRoute: (routeSettings) {
-                        if (routeSettings.name == "/home") {
+                        if (routeSettings.name == "/") {
                           return MaterialPageRoute(builder: (_) => _Home());
                         } else {
-                          return MaterialPageRoute(builder: (_) => Container());
+                          return MaterialPageRoute(builder: (_) => Container(color: Colors.red,));
                         }
                       },
                       key: key,

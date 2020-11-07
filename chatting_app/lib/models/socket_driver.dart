@@ -24,26 +24,33 @@ class SocketDriver extends ChangeNotifier {
 
   Chat currentlySelectedChat;
 
+  bool disposed = false;
+
   @override
   void dispose() {
     _channel.sink.close(1001);
+    disposed = true;
 
     super.dispose();
   }
 
-  SocketDriver(this.host, this.port, this.secure, this.withPort, this.username, this.password, this.context, this.navigationKey) {
+  SocketDriver(this.host, this.port, this.secure, this.withPort, this.username,
+      this.password, this.context, this.navigationKey) {
     var attributes = Map<String, dynamic>();
     attributes["username"] = username;
     attributes["password"] = password;
     uri = Uri(
-        scheme: secure != null ? secure ? "wss" : "ws" : "wss",
+        scheme: secure != null
+            ? secure
+                ? "wss"
+                : "ws"
+            : "wss",
+        // scheme: "ws",
         host: host,
-        port: withPort ? port: null,
+        port: withPort ? port : null,
         queryParameters: attributes);
     print(uri);
     _connect();
-
-
   }
 
   void _onError(e) {
@@ -76,9 +83,9 @@ class SocketDriver extends ChangeNotifier {
       _handleNewChat(json);
     } else if (code == OPCodes.joinedChat) {
       _handleJoinedChat(json);
-    } else if(code == OPCodes.leftChat) {
+    } else if (code == OPCodes.leftChat) {
       _handleLeftChat(json);
-    }else {
+    } else {
       throw Exception("Cannot resolve packet");
     }
   }
@@ -126,7 +133,7 @@ class SocketDriver extends ChangeNotifier {
     chats.add(c);
     notifyListeners();
   }
-  
+
   _handleJoinedChat(json) {
     JoinChat c = JoinChat.fromJson(json);
 
@@ -142,9 +149,10 @@ class SocketDriver extends ChangeNotifier {
   }
 
   void _connect() {
-    _channel = WebSocketChannel.connect(uri);
-
-    _channel.stream.listen(_listen, onDone: _onDone, onError: _onError);
+    if (!disposed) {
+      _channel = WebSocketChannel.connect(uri);
+      _channel.stream.listen(_listen, onDone: _onDone, onError: _onError);
+    }
   }
 
   sendMessage(String m, int chatId) {
